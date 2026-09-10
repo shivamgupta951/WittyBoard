@@ -2,6 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import type { Metadata } from "next";
 import Provider from "./provider";
+import { Toaster } from "@/components/ui/toast";
 
 export const metadata: Metadata = {
   title: "Next.js Premium Startup Boilerplate",
@@ -21,7 +22,10 @@ export default function RootLayout({
   if (!isClerkConfigured) {
     return (
       <html lang="en">
-        <body style={{ margin: 0, padding: 0 }}>{children}</body>
+        <body style={{ margin: 0, padding: 0 }}>
+          {children}
+          <Toaster />
+        </body>
       </html>
     );
   }
@@ -29,8 +33,9 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body style={{ margin: 0, padding: 0 }}>
+        <body style={{ margin: 0, padding: 0 }} className="bg-linear-to-r from-gray-200 via-purple-300 to-purple-300">
           <Provider>{children}</Provider>
+          <Toaster/>
         </body>
       </html>
     </ClerkProvider>
