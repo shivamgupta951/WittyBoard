@@ -22,6 +22,7 @@ import {
   Eraser,
   Shapes,
 } from "lucide-react";
+import FloatingProperties from "./FloatingProperties";
 
 const tools = [
   {
@@ -85,6 +86,8 @@ function WhiteSmartBoard() {
   const [excalidrawAPI, setExcalidrawAPI] =
     useState<ExcalidrawImperativeAPI | null>(null);
   const [activeTool, setActiveTool] = useState("selection");
+  const [selectedElement, setSelectedElement] = useState<any>(null);
+  const [canvasState, setCanvasState] = useState<any>(null);
   const saveTimeRef = useRef<any>(null);
   const { projectid } = useParams();
   const handleCanvasChange = (
@@ -92,6 +95,16 @@ function WhiteSmartBoard() {
     appState: any,
     files: any,
   ) => {
+    setCanvasState(appState);
+    const selectedIds = Object.keys(appState.selectedElementIds || {});
+
+    if (selectedIds?.length == 1) {
+      const element = elements.find((element) => element.id == selectedIds[0]);
+      setSelectedElement(element);
+    } else {
+      setSelectedElement(null);
+    }
+
     if (saveTimeRef.current) {
       clearTimeout(saveTimeRef.current);
     }
@@ -142,8 +155,40 @@ function WhiteSmartBoard() {
     });
   };
 
+  const getFloatingPosition = () => {
+    if (!selectedElement || !canvasState) {
+      return { left: 0, top: 0 };
+    }
+    const zoom = canvasState.zoom?.value ?? 1;
+
+    const scrollX = canvasState.scrollX ?? 0;
+
+    const scrollY = canvasState.scrollY ?? 0;
+
+    // Convert Excalidraw coordinates
+    // into browser coordinates
+    const screenX = (selectedElement.x + scrollX) * zoom;
+
+    const screenY = (selectedElement.y + scrollY) * zoom;
+
+    const panelWidth = 300;
+    const viewportWidth = typeof window === "undefined" ? 0 : window.innerWidth;
+
+    return {
+      left:
+        viewportWidth > 0
+          ? Math.max(
+              panelWidth * 0.9,
+              Math.min(screenX, viewportWidth),
+            )
+          : screenX,
+      top: Math.max(16, screenY),
+    };
+  };
+
+  const floatingPosition = getFloatingPosition();
   return (
-    <div style={{ height: "90vh" }}>
+    <div className="relative" style={{ height: "90vh" }}>
       <Excalidraw
         //@ts-ignore
         excalidrawAPI={(api) => setExcalidrawAPI(api)}
@@ -162,6 +207,11 @@ function WhiteSmartBoard() {
           );
         })}
       </div>
+      <FloatingProperties
+        selectedElement={selectedElement}
+        position={floatingPosition}
+        excalidrawAPI={excalidrawAPI}
+      />
     </div>
   );
 }
