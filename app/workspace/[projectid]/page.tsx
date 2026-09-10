@@ -1,9 +1,14 @@
 "use client";
 
 import SmartDoc from "@/components/custom/workspace/SmartDoc";
-import WhiteSmartBoard from "@/components/custom/workspace/WhiteSmartBoard";
 import WorkspaceHeader from "@/components/custom/workspace/WorkspaceHeader";
+import dynamic from "next/dynamic";
 import React, { useState } from "react";
+
+const WhiteSmartBoard = dynamic(
+  () => import("@/components/custom/workspace/WhiteSmartBoard"),
+  { ssr: false },
+);
 
 function page() {
   const [activeTab, setActiveTab] = useState("whiteboard");
