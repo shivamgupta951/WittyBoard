@@ -21,8 +21,11 @@ import {
   Image,
   Eraser,
   Shapes,
+  Sparkles,
 } from "lucide-react";
 import FloatingProperties from "./FloatingProperties";
+import { Button } from "@/components/ui/button";
+import AIFloatingSidebar from "./AIFloatingSidebar";
 
 const tools = [
   {
@@ -87,6 +90,7 @@ function WhiteSmartBoard() {
     useState<ExcalidrawImperativeAPI | null>(null);
   const [activeTool, setActiveTool] = useState("selection");
   const [selectedElement, setSelectedElement] = useState<any>(null);
+  const [showAiSideBar, setShowAiSideBar] = useState(false);
   const [canvasState, setCanvasState] = useState<any>(null);
   const saveTimeRef = useRef<any>(null);
   const { projectid } = useParams();
@@ -177,10 +181,7 @@ function WhiteSmartBoard() {
     return {
       left:
         viewportWidth > 0
-          ? Math.max(
-              panelWidth * 0.9,
-              Math.min(screenX, viewportWidth),
-            )
+          ? Math.max(panelWidth * 0.9, Math.min(screenX, viewportWidth))
           : screenX,
       top: Math.max(16, screenY),
     };
@@ -199,6 +200,7 @@ function WhiteSmartBoard() {
           const Icon = tool.icon;
           return (
             <button
+              key={tool.name}
               className={`flex h-7 w-7 my-0.5 items-center justify-center rounded-2xl transition hover:bg-primary/10 hover:cursor-pointer ${activeTool === tool.name ? "bg-primary/20" : ""}`}
               onClick={() => changeTool(tool.name)}
             >
@@ -212,6 +214,15 @@ function WhiteSmartBoard() {
         position={floatingPosition}
         excalidrawAPI={excalidrawAPI}
       />
+
+      <div className="absolute right-15 bottom-3 z-50">
+        <Button size="lg" onClick={()=>setShowAiSideBar(!showAiSideBar)}>
+          <Sparkles /> SmartWitty
+        </Button>
+      </div>
+
+      {showAiSideBar && <AIFloatingSidebar excalidrawApi={excalidrawAPI}/>}
+
     </div>
   );
 }

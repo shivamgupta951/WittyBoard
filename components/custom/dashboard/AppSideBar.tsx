@@ -31,7 +31,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="logo" width={40} height={40} />
+          <Image className="h-10 w-10" src="/logo.svg" alt="logo" width={40} height={40} />
           <h2 className="text-xl font-bold tracking-tight">WittyBoard</h2>
         </div>
       </SidebarHeader>

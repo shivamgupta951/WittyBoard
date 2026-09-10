@@ -14,7 +14,7 @@ function WorkspaceHeader({selectedTab}:Props) {
   return (
     <div className="p-3 border-b flex justify-between">
       <div className="flex gap-2 items-center">
-        <Image src="/logo.svg" alt="logo" width={40} height={40} />
+        <Image className="h-10 w-10" src="/logo.svg" alt="logo" width={40} height={40} />
         <h2>WorkSpace Name</h2>
       </div>
 
