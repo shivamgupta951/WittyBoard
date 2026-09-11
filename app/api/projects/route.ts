@@ -9,16 +9,35 @@ import {
   purgeExpiredProjects,
 } from "../../../lib/archive-cleanup";
 
+// Project creation is the authoritative quota check. Archived rows still count
+// until their seven-day retention period expires, so archiving cannot bypass the
+// workspace allowance.
 export async function POST(req: NextRequest) {
   await purgeExpiredProjects();
-  const { projectName, projectId } = await req.json();
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
+  }
+
+  const { projectName, projectId } = (body ?? {}) as Record<string, unknown>;
   const user = await currentUser();
 
   if (!user?.primaryEmailAddress?.emailAddress) {
-    return NextResponse.json({ error: "Unautharized User!" });
+    return NextResponse.json({ error: "Unauthorized User!" }, { status: 401 });
   }
-  if (!projectId || !projectName) {
-    return NextResponse.json({ error: "Project details missing!" });
+  if (
+    typeof projectId !== "string" ||
+    !/^[0-9a-f-]{36}$/i.test(projectId) ||
+    typeof projectName !== "string" ||
+    projectName.trim().length === 0 ||
+    projectName.trim().length > 30
+  ) {
+    return NextResponse.json(
+      { error: "Project name must be 1-30 characters and projectId must be a UUID." },
+      { status: 400 },
+    );
   }
 
   const existingProjects = await db
@@ -38,7 +57,7 @@ export async function POST(req: NextRequest) {
     .insert(projects)
     .values({
       projectId: projectId,
-      projectName: projectName ?? "",
+      projectName: projectName.trim(),
       userEmail: user?.primaryEmailAddress?.emailAddress ?? "",
     })
     .returning();
@@ -63,6 +82,8 @@ export async function GET(req: NextRequest) {
   }
 
   if (!projectId) {
+    // The same endpoint serves both dashboard tabs; the query parameter chooses
+    // whether active or archived projects are returned.
     const archived = req.nextUrl.searchParams.get("archived") === "true";
     const result = await db
       .select()
@@ -126,6 +147,8 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Workspace is already archived." }, { status: 409 });
   }
 
+  // DELETE is intentionally a soft delete. The row remains available for
+  // restore until the persisted deleteAt deadline is reached.
   await db
     .update(projects)
     .set({
@@ -154,6 +177,8 @@ export async function PATCH(req: NextRequest) {
     );
   }
 
+  // Restoring clears both lifecycle timestamps, returning the project to the
+  // active list and removing it from the automatic purge queue.
   const result = await db
     .update(projects)
     .set({ archivedAt: null, deleteAt: null })

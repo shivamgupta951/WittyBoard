@@ -2,6 +2,8 @@ import { purgeExpiredProjects } from "@/lib/archive-cleanup";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
+  // Vercel sends this header when invoking a scheduled function. Keeping the
+  // route secret-protected prevents arbitrary callers from triggering cleanup.
   const cronSecret = process.env.CRON_SECRET;
   const authorization = req.headers.get("authorization");
 

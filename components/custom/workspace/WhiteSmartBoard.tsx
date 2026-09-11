@@ -131,6 +131,8 @@ function WhiteSmartBoard({ onApiReady }: Props) {
 
     let cancelled = false;
 
+    // Excalidraw must be ready before restoring the scene. The hydration flag
+    // prevents its initial empty onChange event from overwriting saved data.
     const loadCanvas = async () => {
       try {
         const { data } = await axios.get("/api/whiteboard", {
@@ -208,6 +210,8 @@ function WhiteSmartBoard({ onApiReady }: Props) {
       setSelectedElement(null);
     }
 
+    // Keep the latest event for an unmount fallback. The interval below reads
+    // directly from Excalidraw so imperative UI tools are also captured.
     pendingSaveRef.current = { elements, appState, files };
   };
 
@@ -222,6 +226,8 @@ function WhiteSmartBoard({ onApiReady }: Props) {
   useEffect(() => {
     if (!excalidrawAPI || !projectId) return;
 
+    // A fixed interval is deliberate: Notes, Emoji, AI, and property panels can
+    // update Excalidraw without always emitting React onChange.
     const saveCurrentCanvas = async () => {
       if (!isHydratedRef.current) return;
 

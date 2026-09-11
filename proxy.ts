@@ -8,8 +8,11 @@ const isClerkConfigured =
 const isProtectedRoute = createRouteMatcher([
   "/dashboard/:path*",
   "/dashboard",
+  "/workspace/:path*",
 ]);
 
+// Middleware protects navigation, while each API handler repeats ownership
+// checks because direct API requests do not depend on page rendering.
 const middleware = isClerkConfigured
   ? clerkMiddleware(async (auth, req) => {
       if (isProtectedRoute(req)) {

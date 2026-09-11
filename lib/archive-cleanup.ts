@@ -4,6 +4,8 @@ import { MAX_WORKSPACES } from "@/lib/constants";
 
 export const ARCHIVE_RETENTION_DAYS = 7;
 
+// The deadline is calculated once when a workspace is archived. Persisting it
+// makes the countdown stable across refreshes and lets a cron job enforce it.
 export function getArchiveExpiryDate(archivedAt: Date) {
   return new Date(
     archivedAt.getTime() + ARCHIVE_RETENTION_DAYS * 24 * 60 * 60 * 1000,
@@ -11,6 +13,8 @@ export function getArchiveExpiryDate(archivedAt: Date) {
 }
 
 export async function purgeExpiredProjects() {
+  // This fallback cleanup also runs during normal API traffic. The scheduled
+  // route handles production cleanup, while this keeps local development useful.
   const now = new Date();
   const archivedProjects = await db
     .select({
@@ -29,6 +33,7 @@ export async function purgeExpiredProjects() {
 
     if (!deleteAt) continue;
 
+    // Older archived rows predate deleteAt, so backfill their deadline lazily.
     if (!project.deleteAt) {
       await db
         .update(projects)
@@ -38,6 +43,8 @@ export async function purgeExpiredProjects() {
 
     if (deleteAt > now) continue;
 
+    // Whiteboard data has a foreign-key relationship to the project, so remove
+    // the child row first before permanently deleting the project row.
     await db
       .delete(whiteboardData)
       .where(eq(whiteboardData.projectId, project.projectId));

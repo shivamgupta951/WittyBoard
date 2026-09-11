@@ -1,169 +1,55 @@
-import React from 'react';
+import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <main style={styles.container}>
-      <div style={styles.hero}>
-        <div style={styles.badge}>Next.js Boilerplate CLI 🚀</div>
-        <h1 style={styles.title}>
-          Hello World! 
-        </h1>
-        <p style={styles.subtitle}>
-          Congratulations! Your customized Next.js boilerplate has been successfully scaffolded with all your selected databases, components, and authentication configurations.
-        </p>
-        
-        <div style={styles.ctaGroup}>
-          <a href="https://nextjs.org/docs" target="_blank" rel="noopener noreferrer" style={styles.primaryCta}>
-            Read Next.js Docs
-          </a>
-          <a href="#features" style={styles.secondaryCta}>
-            Explore Stack Files
-          </a>
-        </div>
-      </div>
-
-      <section id="features" style={styles.grid}>
-        <div style={styles.card}>
-          <div style={styles.icon}>⚡</div>
-          <h3 style={styles.cardTitle}>App Router Ready</h3>
-          <p style={styles.cardText}>Built using modern Next.js 15 App Router with full Server Components and safe SEO presets.</p>
-        </div>
-        
-        <div style={styles.card}>
-          <div style={styles.icon}>🔒</div>
-          <h3 style={styles.cardTitle}>Modular Auth</h3>
-          <p style={styles.cardText}>Pre-configured middleware rules and pages for secure, lightning-fast session validation.</p>
-        </div>
-
-        <div style={styles.card}>
-          <div style={styles.icon}>🗄️</div>
-          <h3 style={styles.cardTitle}>Database Integration</h3>
-          <p style={styles.cardText}>Configured connections, client instances, schemas, and live migration configurations.</p>
+    <main className="min-h-screen overflow-hidden bg-[#f6f8fc] text-slate-950">
+      <section className="relative isolate min-h-180 border-b border-slate-200">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_75%_18%,rgba(99,102,241,0.18),transparent_28%),radial-gradient(circle_at_15%_80%,rgba(14,165,233,0.12),transparent_25%)]" />
+        <nav className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 lg:px-10">
+          <Link href="/" className="flex items-center gap-3">
+            <Image src="/logo.svg" alt="WittyBoard logo" width={42} height={34} />
+            <span className="text-xl font-bold tracking-tight">WittyBoard</span>
+          </Link>
+          {/* Auth links carry users straight to the dashboard after Clerk completes the flow. */}
+          <div className="flex items-center gap-3 text-sm font-semibold">
+            <Link href="/sign-in?redirect_url=/dashboard" className="rounded-full px-4 py-2 text-slate-600 transition hover:bg-white hover:text-slate-950">Sign in</Link>
+            <Link href="/sign-up?redirect_url=/dashboard" className="rounded-full bg-slate-950 px-4 py-2 text-white shadow-lg shadow-slate-950/15 transition hover:bg-indigo-700">Create account</Link>
+          </div>
+        </nav>
+        <div className="mx-auto grid w-full max-w-7xl items-center gap-14 px-6 pb-20 pt-12 lg:grid-cols-[0.9fr_1.1fr] lg:px-10 lg:pb-28 lg:pt-20">
+          <div className="max-w-2xl">
+            <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/75 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-indigo-700 shadow-sm"><span className="size-2 rounded-full bg-emerald-500" /> Think together. Build clearly.</p>
+            <h1 className="text-5xl font-black leading-[0.98] tracking-[-0.04em] text-slate-950 sm:text-7xl">Turn scattered ideas into a board everyone can see.</h1>
+            <p className="mt-7 max-w-xl text-lg leading-8 text-slate-600">WittyBoard brings sketches, structured notes, emojis, and SmartWitty AI into one focused space for planning what comes next.</p>
+            <div className="mt-9 flex flex-wrap items-center gap-4">
+              <Link href="/sign-up?redirect_url=/dashboard" className="rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-xl shadow-indigo-600/20 transition hover:-translate-y-0.5 hover:bg-indigo-700">Start for free</Link>
+              <Link href="/sign-in?redirect_url=/dashboard" className="rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-bold text-slate-700 transition hover:border-slate-500 hover:text-slate-950">Sign in to your boards</Link>
+            </div>
+            <div className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-500"><span>10 workspaces included</span><span>Autosaved boards</span><span>AI-assisted diagrams</span></div>
+          </div>
+          {/* This preview is intentionally above the fold so visitors immediately see the product. */}
+          <div className="relative mx-auto w-full max-w-2xl">
+            <div className="absolute -inset-5 rounded-[2rem] bg-indigo-400/15 blur-2xl" />
+            <div className="relative overflow-hidden rounded-[1.6rem] border border-white bg-white p-3 shadow-2xl shadow-indigo-950/15">
+              <div className="flex items-center gap-2 border-b border-slate-100 px-3 pb-3"><span className="size-2.5 rounded-full bg-rose-400" /><span className="size-2.5 rounded-full bg-amber-400" /><span className="size-2.5 rounded-full bg-emerald-400" /><span className="ml-3 text-xs font-semibold text-slate-400">Product launch map</span></div>
+              <div className="relative mt-3 aspect-[1.35] overflow-hidden rounded-xl bg-slate-100">
+                <Image src="/image.png" alt="WittyBoard whiteboard preview" fill priority sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
+                <div className="absolute inset-0 bg-linear-to-tr from-slate-950/20 via-transparent to-white/20" />
+                <div className="absolute left-[10%] top-[18%] rounded-lg bg-white/90 px-4 py-3 text-xs font-bold text-indigo-700 shadow-lg">Shape the idea</div>
+                <div className="absolute right-[12%] top-[42%] rounded-lg bg-amber-100/95 px-4 py-3 text-xs font-bold text-amber-900 shadow-lg">Make it visible</div>
+                <div className="absolute bottom-[16%] left-[22%] rounded-lg bg-emerald-100/95 px-4 py-3 text-xs font-bold text-emerald-900 shadow-lg">Move together</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
-
-      <footer style={styles.footer}>
-        Created with <span style={{ color: '#ec4899' }}>♥</span> by{' '}
-        <a
-          href="https://www.youtube.com/@tubeguruji"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: '#71717a', textDecoration: 'underline', transition: 'color 0.2s' }}
-        >
-          Tubeguruji
-        </a>
-      </footer>
+      {/* These three steps explain the primary workflow without distracting from the auth CTA. */}
+      <section className="mx-auto grid w-full max-w-7xl gap-5 px-6 py-16 sm:grid-cols-3 lg:px-10">
+        <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-sm font-bold text-indigo-600">01 / Capture</p><h2 className="mt-3 text-xl font-bold">Start with a blank canvas</h2><p className="mt-2 text-sm leading-6 text-slate-500">Sketch flows, drop in notes, and build a visual language that fits the way your team thinks.</p></article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-sm font-bold text-emerald-600">02 / Shape</p><h2 className="mt-3 text-xl font-bold">Let SmartWitty help</h2><p className="mt-2 text-sm leading-6 text-slate-500">Turn a rough description into a useful diagram, flowchart, wireframe, or architecture map.</p></article>
+        <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-sm font-bold text-amber-600">03 / Return</p><h2 className="mt-3 text-xl font-bold">Your work stays yours</h2><p className="mt-2 text-sm leading-6 text-slate-500">Boards autosave, survive reloads, and remain available from your workspace library.</p></article>
+      </section>
     </main>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#09090b',
-    color: '#fafafa',
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif",
-    padding: '2rem',
-    boxSizing: 'border-box',
-  },
-  hero: {
-    textAlign: 'center',
-    maxWidth: '800px',
-    marginBottom: '4rem',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  badge: {
-    display: 'inline-block',
-    padding: '0.5rem 1rem',
-    borderRadius: '9999px',
-    backgroundColor: '#27272a',
-    fontSize: '0.875rem',
-    fontWeight: 500,
-    color: '#38bdf8',
-    marginBottom: '1.5rem',
-    border: '1px solid #3f3f46',
-  },
-  title: {
-    fontSize: '3rem',
-    fontWeight: 800,
-    letterSpacing: '-0.025em',
-    lineHeight: 1.2,
-    margin: '0 0 1rem 0',
-  },
-  gradient: {
-    background: 'linear-gradient(to right, #38bdf8, #818cf8, #c084fc)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-  },
-  subtitle: {
-    fontSize: '1.125rem',
-    color: '#a1a1aa',
-    lineHeight: 1.6,
-    margin: '0 0 2rem 0',
-    maxWidth: '600px',
-  },
-  ctaGroup: {
-    display: 'flex',
-    gap: '1rem',
-  },
-  primaryCta: {
-    padding: '0.75rem 1.5rem',
-    borderRadius: '8px',
-    backgroundColor: '#38bdf8',
-    color: '#09090b',
-    fontWeight: 600,
-    textDecoration: 'none',
-    transition: 'opacity 0.2s',
-  },
-  secondaryCta: {
-    padding: '0.75rem 1.5rem',
-    borderRadius: '8px',
-    backgroundColor: 'transparent',
-    color: '#fafafa',
-    fontWeight: 600,
-    textDecoration: 'none',
-    border: '1px solid #3f3f46',
-    transition: 'background-color 0.2s',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-    gap: '2rem',
-    width: '100%',
-    maxWidth: '1000px',
-    marginBottom: '4rem',
-  },
-  card: {
-    backgroundColor: '#18181b',
-    border: '1px solid #27272a',
-    borderRadius: '12px',
-    padding: '1.5rem',
-    transition: 'transform 0.2s, border-color 0.2s',
-  },
-  icon: {
-    fontSize: '2rem',
-    marginBottom: '1rem',
-  },
-  cardTitle: {
-    fontSize: '1.25rem',
-    fontWeight: 600,
-    margin: '0 0 0.5rem 0',
-  },
-  cardText: {
-    fontSize: '0.875rem',
-    color: '#a1a1aa',
-    lineHeight: 1.5,
-    margin: 0,
-  },
-  footer: {
-    fontSize: '0.875rem',
-    color: '#71717a',
-    marginTop: 'auto',
-  },
-};

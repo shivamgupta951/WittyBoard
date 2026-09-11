@@ -48,6 +48,8 @@ export function AppSidebar() {
 
   const usedWorkspaces = Math.max(0, MAX_WORKSPACES - credits);
   const usagePercent = Math.min(100, (usedWorkspaces / MAX_WORKSPACES) * 100);
+  // Credits are derived from all retained project rows, including archives.
+  // This keeps the progress indicator aligned with the server-side quota.
   return (
     <Sidebar>
       <SidebarHeader className="p-4">

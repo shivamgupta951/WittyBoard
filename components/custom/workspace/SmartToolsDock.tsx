@@ -115,6 +115,8 @@ function SmartToolsDock({ excalidrawApi, onSmartWitty }: Props) {
 
   const addElements = (elements: any[]) => {
     if (!excalidrawApi) return;
+    // All dock tools create normal Excalidraw elements, so the result remains
+    // selectable, editable, autosaved, and exportable like hand-drawn content.
     const newElements = convertToExcalidrawElements(elements as any);
     excalidrawApi.updateScene({
       elements: [...excalidrawApi.getSceneElements(), ...newElements],
@@ -226,6 +228,8 @@ function SmartToolsDock({ excalidrawApi, onSmartWitty }: Props) {
   );
 
   const togglePanel = (panel: Exclude<Panel, null>) => {
+    // Only one utility panel is open at a time, keeping the dock usable on
+    // smaller screens and avoiding overlapping popovers.
     setActivePanel((current) => (current === panel ? null : panel));
     if (panel !== "emoji") setSearch("");
   };

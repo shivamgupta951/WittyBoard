@@ -4,6 +4,8 @@ import { UserButton } from '@clerk/nextjs'
 import React, { Suspense } from 'react'
 
 function page() {
+  // The project list reads the URL query to keep the Active/Archive view
+  // shareable and compatible with the sidebar navigation.
   return (
     <div>
       {/* Welcome Banner */}

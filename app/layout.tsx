@@ -22,6 +22,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+    // Clerk is optional for local scaffolding, but production deployments use
+    // the provider and middleware to protect dashboard/workspace navigation.
   if (!isClerkConfigured) {
     return (
       <html lang="en">

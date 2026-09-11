@@ -52,6 +52,8 @@ function ProjectList() {
   const router = useRouter();
 
   useEffect(() => {
+    // The URL is the source of truth for the selected library view, allowing
+    // refreshes and sidebar navigation to load the same dataset.
     setActiveView(requestedView);
   }, [requestedView]);
 
@@ -83,6 +85,8 @@ function ProjectList() {
 
     setProcessingId(project.projectId);
     try {
+      // Soft delete removes the card from Active but preserves its data for
+      // restore until the server-side retention deadline.
       await axios.delete("/api/projects", { data: { projectId: project.projectId } });
       setProjectList((current) => current.filter((item) => item.projectId !== project.projectId));
       toast.add({ title: "Workspace archived", description: "You can restore it from Archive.", type: "success" });

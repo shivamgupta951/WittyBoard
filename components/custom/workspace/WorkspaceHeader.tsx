@@ -24,6 +24,7 @@ function WorkspaceHeader({ selectedTab, onExport, onSave, isSaving }: Props) {
 
   const handleTabChange = (value: string) => {
     if (value === "dashboard") {
+      // Dashboard is a route, not another workspace document tab.
       router.push("/dashboard");
       return;
     }

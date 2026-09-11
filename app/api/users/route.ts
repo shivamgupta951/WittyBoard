@@ -8,6 +8,8 @@ export async function POST(req: NextRequest) {
   const user = await currentUser();
 
   if (user) {
+    // The provider calls this endpoint after sign-in. Recalculating credits from
+    // projects makes old users consistent with the current ten-workspace rule.
     const userData = await db
       .select()
       .from(users)

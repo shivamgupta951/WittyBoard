@@ -18,6 +18,8 @@ function page() {
   const { projectid } = useParams();
   const projectId = Array.isArray(projectid) ? projectid[0] : projectid;
   const [isSaving, setIsSaving] = useState(false);
+  // The page owns the imperative Excalidraw API so header actions can export or
+  // save the same live scene that the whiteboard component is rendering.
   const handleExportImage = async () => {
     if (!api) return;
 

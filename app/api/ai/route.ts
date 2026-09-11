@@ -1,5 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
+import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+
+const MAX_USER_INPUT_LENGTH = 2000;
+const MAX_SYSTEM_PROMPT_LENGTH = 6000;
+const MAX_GENERATED_ELEMENTS = 100;
 
 const elementSchema = {
   type: "object",
@@ -71,6 +76,9 @@ const responseSchema = {
   required: ["elements", "connections"],
   additionalProperties: false,
 };
+
+// Gemini receives a strict JSON schema so the client can safely convert the
+// response into Excalidraw elements without trusting arbitrary model prose.
 
 const visualEnhancementPrompt = `
 GLOBAL VISUAL ENHANCEMENT RULES:
@@ -325,6 +333,15 @@ export async function POST(request: NextRequest) {
   };
 
   try {
+    // API routes need their own authentication check because they can be called
+    // directly, independently of the page routes protected by middleware.
+    if (!(await currentUser())) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 },
+      );
+    }
+
     const body = await request.json();
     if (!body || typeof body !== "object") {
       return NextResponse.json(
@@ -347,6 +364,27 @@ export async function POST(request: NextRequest) {
     if (!userInput) {
       return NextResponse.json(
         { success: false, error: "userInput is required" },
+        { status: 400 },
+      );
+    }
+
+    if (userInput.length > MAX_USER_INPUT_LENGTH) {
+      return NextResponse.json(
+        { success: false, error: `userInput must be ${MAX_USER_INPUT_LENGTH} characters or fewer` },
+        { status: 400 },
+      );
+    }
+
+    if (systemPrompt.length > MAX_SYSTEM_PROMPT_LENGTH) {
+      return NextResponse.json(
+        { success: false, error: `systemPrompt must be ${MAX_SYSTEM_PROMPT_LENGTH} characters or fewer` },
+        { status: 400 },
+      );
+    }
+
+    if (!Number.isFinite(Number(canvasPosition.x)) || !Number.isFinite(Number(canvasPosition.y))) {
+      return NextResponse.json(
+        { success: false, error: "canvasPosition must contain finite x and y values" },
         { status: 400 },
       );
     }
@@ -429,7 +467,7 @@ Return connections using the source and target element ids. Add a short label fo
 
     const parsed = parseModelJson(response.text ?? "{}");
     const elements = Array.isArray(parsed.elements)
-      ? ensureElementIds(parsed.elements.filter(isValidElement))
+      ? ensureElementIds(parsed.elements.filter(isValidElement)).slice(0, MAX_GENERATED_ELEMENTS)
       : null;
     const connections = Array.isArray(parsed.connections)
       ? parsed.connections.filter(

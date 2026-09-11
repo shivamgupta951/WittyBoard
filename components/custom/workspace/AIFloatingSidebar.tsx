@@ -293,6 +293,8 @@ function AIFloatingSidebar({ excalidrawApi, onClose }: Props) {
         },
       });
 
+      // Keep the loading state visible for a short, predictable period so the
+      // user can see that the AI operation is still working.
       const [result] = await Promise.all([
         axios.post("/api/ai", {
           userInput: prompt.trim(),
@@ -384,8 +386,9 @@ function AIFloatingSidebar({ excalidrawApi, onClose }: Props) {
 
       <div className="mt-3 space-y-0.5">
         {AiTools.map((tool) => (
-          <div
+          <button
             key={tool.name}
+            type="button"
             className={`flex cursor-pointer items-center gap-2 rounded-lg p-1.5 transition-colors ${selectedTool === tool.name ? "bg-gray-700 text-white shadow-sm" : "hover:bg-gray-50"}`}
             onClick={() => {
               setSelectedTool(tool.name);
@@ -410,7 +413,7 @@ function AIFloatingSidebar({ excalidrawApi, onClose }: Props) {
                 {tool.desc}
               </p>
             </div>
-          </div>
+          </button>
         ))}
       </div>
 
