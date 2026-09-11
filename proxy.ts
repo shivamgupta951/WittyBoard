@@ -11,8 +11,6 @@ const isProtectedRoute = createRouteMatcher([
   "/workspace/:path*",
 ]);
 
-// Middleware protects navigation, while each API handler repeats ownership
-// checks because direct API requests do not depend on page rendering.
 const middleware = isClerkConfigured
   ? clerkMiddleware(
       async (auth, req) => {
@@ -32,13 +30,8 @@ export default middleware;
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and static files
     "/((?!_next|[^?]*\\.(?:html|css|js|gif|svg|jpg|jpeg|png|woff|woff2|ico|csv|docx|xlsx|zip|webmanifest)).*)",
-
-    // Clerk frontend API proxy
-    "/__clerk/:path*",
-
-    // Always run for API routes
+    "/__clerk/(.*)",
     "/(api|trpc)(.*)",
   ],
 };
