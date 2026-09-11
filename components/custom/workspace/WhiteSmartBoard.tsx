@@ -20,12 +20,11 @@ import {
   Type,
   Image,
   Eraser,
-  Shapes,
-  Sparkles,
+  Loader2,
 } from "lucide-react";
 import FloatingProperties from "./FloatingProperties";
-import { Button } from "@/components/ui/button";
 import AIFloatingSidebar from "./AIFloatingSidebar";
+import SmartToolsDock from "./SmartToolsDock";
 
 const tools = [
   {
@@ -85,20 +84,107 @@ const tools = [
   },
 ];
 
-function WhiteSmartBoard() {
+type Props = {
+  onApiReady: (api: ExcalidrawImperativeAPI) => void;
+};
+ 
+
+function WhiteSmartBoard({ onApiReady }: Props) {
   const [excalidrawAPI, setExcalidrawAPI] =
     useState<ExcalidrawImperativeAPI | null>(null);
   const [activeTool, setActiveTool] = useState("selection");
   const [selectedElement, setSelectedElement] = useState<any>(null);
   const [showAiSideBar, setShowAiSideBar] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [canvasState, setCanvasState] = useState<any>(null);
-  const saveTimeRef = useRef<any>(null);
+  const pendingSaveRef = useRef<{
+    elements: readonly any[];
+    appState: any;
+    files: any;
+  } | null>(null);
+  const isHydratedRef = useRef(false);
   const { projectid } = useParams();
+  const projectId = Array.isArray(projectid) ? projectid[0] : projectid;
+
+  const SaveCanvasChanges = async (
+    elements: readonly any[],
+    appState: any,
+    files: any,
+  ) => {
+    await axios.post("/api/whiteboard", {
+      elements,
+      appState,
+      files,
+      projectId,
+    });
+  };
+
+  useEffect(() => {
+    if (!excalidrawAPI) return;
+
+    if (!projectId) {
+      isHydratedRef.current = true;
+      setIsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadCanvas = async () => {
+      try {
+        const { data } = await axios.get("/api/whiteboard", {
+          params: { projectId },
+        });
+
+        if (cancelled) return;
+
+        if (data) {
+          const elements = Array.isArray(data.elements) ? data.elements : [];
+          const appState = {
+            ...(data.appState ?? {}),
+            // JSON turns Excalidraw's collaborators Map into a plain object.
+            collaborators: new Map(),
+          };
+          const files = data.files ?? {};
+
+          if (Object.keys(files).length > 0) {
+            excalidrawAPI.addFiles(files as any);
+          }
+
+          excalidrawAPI.updateScene({
+            elements,
+            appState,
+          });
+        }
+
+        isHydratedRef.current = true;
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Failed to load whiteboard:", error);
+        toast.add({
+          title: "Whiteboard could not be loaded",
+          description: "Please refresh and try again.",
+          type: "error",
+        });
+        isHydratedRef.current = true;
+        setIsLoading(false);
+      }
+    };
+
+    void loadCanvas();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [excalidrawAPI, projectId]);
+
   const handleCanvasChange = (
     elements: readonly any[],
     appState: any,
     files: any,
   ) => {
+    if (!isHydratedRef.current) return;
+
     setCanvasState(appState);
     const selectedIds = Object.keys(appState.selectedElementIds || {});
 
@@ -109,25 +195,7 @@ function WhiteSmartBoard() {
       setSelectedElement(null);
     }
 
-    if (saveTimeRef.current) {
-      clearTimeout(saveTimeRef.current);
-    }
-
-    saveTimeRef.current = setTimeout(async () => {
-      try {
-        await SaveCanvasChanges(elements, appState, files);
-        toast.add({
-          title: "Changes Saved!",
-          type: "success",
-        });
-      } catch {
-        toast.add({
-          title: "Changes could not be saved",
-          description: "Please check your connection and try again.",
-          type: "error",
-        });
-      }
-    }, 10000);
+    pendingSaveRef.current = { elements, appState, files };
   };
 
   const changeTool = (tool: any) => {
@@ -139,25 +207,56 @@ function WhiteSmartBoard() {
   };
 
   useEffect(() => {
-    return () => {
-      if (saveTimeRef.current) {
-        clearTimeout(saveTimeRef.current);
+    if (!excalidrawAPI || !projectId) return;
+
+    const saveCurrentCanvas = async () => {
+      if (!isHydratedRef.current) return;
+
+      const snapshot = {
+        elements: excalidrawAPI.getSceneElements(),
+        appState: excalidrawAPI.getAppState(),
+        files: excalidrawAPI.getFiles(),
+      };
+
+      pendingSaveRef.current = snapshot;
+
+      try {
+        await SaveCanvasChanges(
+          snapshot.elements,
+          snapshot.appState,
+          snapshot.files,
+        );
+        pendingSaveRef.current = null;
+        toast.add({
+          title: "Changes Saved!",
+          type: "success",
+        });
+      } catch {
+        toast.add({
+          title: "Changes could not be saved",
+          description: "Please check your connection and try again.",
+          type: "error",
+        });
       }
     };
-  }, []);
 
-  const SaveCanvasChanges = async (
-    elements: readonly any[],
-    appState: any,
-    files: any,
-  ) => {
-    await axios.post("/api/whiteboard", {
-      elements: elements,
-      appState: appState,
-      files: files,
-      projectId: projectid,
-    });
-  };
+    const saveInterval = window.setInterval(() => {
+      void saveCurrentCanvas();
+    }, 20000);
+
+    return () => {
+      window.clearInterval(saveInterval);
+
+      const pendingSave = pendingSaveRef.current;
+      if (pendingSave) {
+        void SaveCanvasChanges(
+          pendingSave.elements,
+          pendingSave.appState,
+          pendingSave.files,
+        );
+      }
+    };
+  }, [excalidrawAPI, projectId]);
 
   const getFloatingPosition = () => {
     if (!selectedElement || !canvasState) {
@@ -192,7 +291,10 @@ function WhiteSmartBoard() {
     <div className="relative" style={{ height: "90vh" }}>
       <Excalidraw
         //@ts-ignore
-        excalidrawAPI={(api) => setExcalidrawAPI(api)}
+        excalidrawAPI={(api) => {
+          setExcalidrawAPI(api);
+          onApiReady(api);
+        }}
         onChange={handleCanvasChange}
       />
       <div className="absolute left-4 top-1/2 z-50 -translate-y-1/2 flex flex-col gap-1 rounded-2xl bg-white border p-1.5 shadow-xl">
@@ -215,13 +317,32 @@ function WhiteSmartBoard() {
         excalidrawAPI={excalidrawAPI}
       />
 
-      <div className="absolute right-15 bottom-3 z-50">
-        <Button size="lg" onClick={()=>setShowAiSideBar(!showAiSideBar)}>
-          <Sparkles /> SmartWitty
-        </Button>
-      </div>
+      <SmartToolsDock
+        excalidrawApi={excalidrawAPI}
+        onSmartWitty={() => setShowAiSideBar((current) => !current)}
+      />
 
-      {showAiSideBar && <AIFloatingSidebar excalidrawApi={excalidrawAPI}/>}
+      {showAiSideBar && (
+        <AIFloatingSidebar
+          excalidrawApi={excalidrawAPI}
+          onClose={() => setShowAiSideBar(false)}
+        />
+      )}
+
+      {isLoading && (
+        <div
+          aria-live="polite"
+          aria-label="Loading whiteboard"
+          className="absolute inset-0 z-60 flex items-center justify-center bg-white/85 backdrop-blur-[2px]"
+        >
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-gray-200 bg-white px-6 py-5 shadow-lg">
+            <Loader2 className="size-8 animate-spin text-blue-600" />
+            <p className="text-sm font-medium text-gray-700">
+              Loading whiteboard...
+            </p>
+          </div>
+        </div>
+      )}
 
     </div>
   );

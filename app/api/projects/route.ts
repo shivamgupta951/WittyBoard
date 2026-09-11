@@ -1,5 +1,6 @@
 import { db, projects } from "@/db";
 import { currentUser } from "@clerk/nextjs/server";
+import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -21,6 +22,36 @@ export async function POST(req: NextRequest) {
       userEmail: user?.primaryEmailAddress?.emailAddress ?? "",
     })
     .returning();
+
+  return NextResponse.json(result[0]);
+}
+
+
+export async function GET(req: NextRequest) {
+  const projectId = req.nextUrl.searchParams.get("projectId");
+  const user = await currentUser();
+  const email = user?.primaryEmailAddress?.emailAddress;
+
+  if (!email) {
+    return NextResponse.json({ error: "Unauthorized User!" }, { status: 401 });
+  }
+
+  if (!projectId) {
+    return NextResponse.json(
+      { error: "Project details missing!" },
+      { status: 400 },
+    );
+  }
+
+  const result = await db
+    .select({ projectId: projects.projectId, projectName: projects.projectName })
+    .from(projects)
+    .where(and(eq(projects.projectId, projectId), eq(projects.userEmail, email)))
+    .limit(1);
+
+  if (!result[0]) {
+    return NextResponse.json({ error: "Project not found!" }, { status: 404 });
+  }
 
   return NextResponse.json(result[0]);
 }

@@ -19,9 +19,10 @@ import { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
 type Props = {
   excalidrawApi: ExcalidrawImperativeAPI | null;
+  onClose: () => void;
 };
 
-function AIFloatingSidebar({ excalidrawApi }: Props) {
+function AIFloatingSidebar({ excalidrawApi, onClose }: Props) {
   const [selectedTool, setSelectedTool] = useState("Generate Diagrams");
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -371,6 +372,7 @@ function AIFloatingSidebar({ excalidrawApi }: Props) {
             className="text-gray-400 hover:text-gray-900"
             size="icon-sm"
             variant="ghost"
+            onClick={onClose}
           >
             <X />
           </Button>
