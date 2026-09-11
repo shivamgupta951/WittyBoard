@@ -35,27 +35,36 @@ function CreateNewBoardDialog() {
     }
     setLoadingState(true);
     const projectId = crypto.randomUUID();
-    const result = await axios.post("/api/projects", {
-      projectName: workspaceName,
-      projectId: projectId,
-    });
+    try {
+      await axios.post("/api/projects", {
+        projectName: workspaceName.trim(),
+        projectId,
+      });
 
-    console.log(result.data);
-    toast.add({
-      type: "success",
-      title: "New WorkSpace Created!",
-    });
-    setLoadingState(false);
-    setDialog(false);
-    router.push('/workspace/' + projectId)
+      toast.add({
+        type: "success",
+        title: "New WorkSpace Created!",
+      });
+      setDialog(false);
+      router.push("/workspace/" + projectId);
+    } catch (error) {
+      const message = axios.isAxiosError(error)
+        ? error.response?.data?.error
+        : "Please try again.";
+      toast.add({
+        type: "error",
+        title: "Workspace could not be created",
+        description: message ?? "Please try again.",
+      });
+    } finally {
+      setLoadingState(false);
+    }
   };
   return (
     <Dialog open={dialog} onOpenChange={setDialog}>
-      <DialogTrigger>
-        <Button className="w-full">
-          <Plus />
-          Create New Board
-        </Button>
+      <DialogTrigger render={<Button className="w-full" />}>
+        <Plus />
+        Create New Board
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -72,8 +81,8 @@ function CreateNewBoardDialog() {
           />
         </div>
         <DialogFooter>
-          <DialogClose>
-            <Button variant="outline">Cancel</Button>
+          <DialogClose render={<Button variant="outline" />}>
+            Cancel
           </DialogClose>
           <Button
             onClick={handleCreateBoard}

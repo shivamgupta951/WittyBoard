@@ -15,9 +15,6 @@ function WelcomeBanner() {
         <p>Bring Your Ideas to life on WittyBoard!</p>
         <div className="flex items-center gap-2 mt-5">
           <CreateNewBoardDialog />
-          <Button variant="outline" size="lg">
-            AI Helper <Sparkles />
-          </Button>
         </div>
       </div>
     </div>

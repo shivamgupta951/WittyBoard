@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { DownloadIcon, Loader2, Save, Share } from "lucide-react";
 import axios from "axios";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type Props = {
@@ -18,8 +18,18 @@ type Props = {
 
 function WorkspaceHeader({ selectedTab, onExport, onSave, isSaving }: Props) {
   const { projectid } = useParams();
+  const router = useRouter();
   const projectId = Array.isArray(projectid) ? projectid[0] : projectid;
   const [projectName, setProjectName] = useState("WorkSpace Name");
+
+  const handleTabChange = (value: string) => {
+    if (value === "dashboard") {
+      router.push("/dashboard");
+      return;
+    }
+
+    selectedTab(value);
+  };
 
   useEffect(() => {
     if (!projectId) return;
@@ -46,10 +56,10 @@ function WorkspaceHeader({ selectedTab, onExport, onSave, isSaving }: Props) {
       </div>
 
       <div>
-        <Tabs defaultValue="whiteboard" onValueChange={selectedTab}>
+        <Tabs defaultValue="whiteboard" onValueChange={handleTabChange}>
           <TabsList>
             <TabsTrigger value="whiteboard">WhiteBoard</TabsTrigger>
-            <TabsTrigger value="doc">Doc</TabsTrigger>
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
@@ -59,8 +69,7 @@ function WorkspaceHeader({ selectedTab, onExport, onSave, isSaving }: Props) {
           {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
           {isSaving ? "Saving..." : "Save"}
         </Button>
-        <Button variant={"outline"}><Share/> Share</Button>
-        <Button onClick={onExport}><DownloadIcon/> Export</Button>
+        <Button variant={"outline"} onClick={onExport}><DownloadIcon/> Export</Button>
       </div>
     </div>
   );

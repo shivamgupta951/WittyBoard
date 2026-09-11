@@ -12,7 +12,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: text("name"),
   email: text("email").notNull().unique(),
-  credits: integer("credits").default(3),
+  credits: integer("credits").default(10),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -22,6 +22,8 @@ export const projects = pgTable("projects", {
   projectName: varchar("projectName").notNull(),
   userEmail: varchar("userEmail").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  archivedAt: timestamp("archived_at"),
+  deleteAt: timestamp("delete_at"),
 });
 
 export const whiteboardData = pgTable("whiteboardData", {

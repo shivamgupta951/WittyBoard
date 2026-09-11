@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Excalidraw } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
 import axios from "axios";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "@/components/ui/toast";
 import "./whiteboard.css";
 import { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
@@ -104,6 +104,7 @@ function WhiteSmartBoard({ onApiReady }: Props) {
   } | null>(null);
   const isHydratedRef = useRef(false);
   const { projectid } = useParams();
+  const router = useRouter();
   const projectId = Array.isArray(projectid) ? projectid[0] : projectid;
 
   const SaveCanvasChanges = async (
@@ -160,6 +161,18 @@ function WhiteSmartBoard({ onApiReady }: Props) {
         isHydratedRef.current = true;
         setIsLoading(false);
       } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 403) {
+          isHydratedRef.current = false;
+          setIsLoading(false);
+          toast.add({
+            title: "Workspace archived",
+            description: "This workspace is read-only. Returning to Archive.",
+            type: "info",
+          });
+          router.replace("/dashboard?view=archived");
+          return;
+        }
+
         console.error("Failed to load whiteboard:", error);
         toast.add({
           title: "Whiteboard could not be loaded",
@@ -176,7 +189,7 @@ function WhiteSmartBoard({ onApiReady }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [excalidrawAPI, projectId]);
+  }, [excalidrawAPI, projectId, router]);
 
   const handleCanvasChange = (
     elements: readonly any[],

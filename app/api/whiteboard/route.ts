@@ -2,6 +2,7 @@ import { db, projects, whiteboardData } from "@/db";
 import { currentUser } from "@clerk/nextjs/server";
 import { and, eq } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
+import { purgeExpiredProjects } from "@/lib/archive-cleanup";
 
 async function getOwnedProject(projectId: string) {
   const user = await currentUser();
@@ -10,7 +11,7 @@ async function getOwnedProject(projectId: string) {
   if (!email) return null;
 
   const result = await db
-    .select({ projectId: projects.projectId })
+    .select({ projectId: projects.projectId, archivedAt: projects.archivedAt })
     .from(projects)
     .where(and(eq(projects.projectId, projectId), eq(projects.userEmail, email)))
     .limit(1);
@@ -19,6 +20,7 @@ async function getOwnedProject(projectId: string) {
 }
 
 export async function GET(req: NextRequest) {
+  await purgeExpiredProjects();
   const projectId = req.nextUrl.searchParams.get("projectId");
 
   if (!projectId) {
@@ -34,6 +36,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized access." }, { status: 401 });
   }
 
+  if (project.archivedAt) {
+    return NextResponse.json({ error: "Workspace is archived." }, { status: 403 });
+  }
+
   const result = await db
     .select()
     .from(whiteboardData)
@@ -44,6 +50,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  await purgeExpiredProjects();
   const { projectId, elements, files, appState } = await req.json();
 
   if (projectId) {
@@ -54,6 +61,13 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           { error: "Unauthorized access." },
           { status: 401 },
+        );
+      }
+
+      if (project.archivedAt) {
+        return NextResponse.json(
+          { error: "Workspace is archived." },
+          { status: 403 },
         );
       }
 
