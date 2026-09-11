@@ -1,5 +1,11 @@
 # ~ 🤖 WittyBoard
 
+<p align="center">
+  <a href="https://witty-board.vercel.app/" target="_blank">
+    <img src="https://img.shields.io/badge/🚀%20Live%20Demo-WittyBoard-blue?style=for-the-badge" alt="Live Demo">
+  </a>
+</p>
+
 ### AI-Powered Collaborative Whiteboard for Ideas, Diagrams & Visual Planning
 
 WittyBoard is a full-stack **AI-powered collaborative whiteboard platform** that helps users transform ideas into visual plans, diagrams, flowcharts, architecture designs, and interactive boards.
