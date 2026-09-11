@@ -5,9 +5,12 @@ import Provider from "./provider";
 import { Toaster } from "@/components/ui/toast";
 
 export const metadata: Metadata = {
-  title: "Next.js Premium Startup Boilerplate",
+  title: "WittyBoard",
   description:
-    "Created using the ultimate interactive Next.js stack generator CLI.",
+    "An AI Powered Whiteboard Platform for versatile users.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 const isClerkConfigured =

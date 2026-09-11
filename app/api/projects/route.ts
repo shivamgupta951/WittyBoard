@@ -4,7 +4,10 @@ import { and, asc, eq, isNull, isNotNull } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import { count } from "drizzle-orm";
 import { MAX_WORKSPACES } from "@/lib/constants";
-import { getArchiveExpiryDate, purgeExpiredProjects } from "@/lib/archive-cleanup";
+import {
+  getArchiveExpiryDate,
+  purgeExpiredProjects,
+} from "../../../lib/archive-cleanup";
 
 export async function POST(req: NextRequest) {
   await purgeExpiredProjects();
